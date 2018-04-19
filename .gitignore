@@ -1,0 +1,14 @@
+*~
+*#*
+*#
+*.root
+*.pcm
+*.out
+*.txt
+*.config
+*.png
+*.sh
+*.zip
+*.rootmap
+
+!unpack.sh
