@@ -10,5 +10,8 @@
 *.sh
 *.zip
 *.rootmap
+*.o
+*.so
+
 
 !unpack.sh
