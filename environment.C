@@ -164,11 +164,12 @@ void load(Int_t runNo) {
     //set current event
     fBarTree[layerNum][barNum][rlNum]->GetEntry(0);
     if(fBar[layerNum][barNum][rlNum]-> tnum > 0)
-      if(fCurrentEvent == 0)
-	fCurrentEvent = fBar[layerNum][barNum][rlNum]-> tnum;
-      else
-	fCurrentEvent = fBar[layerNum][barNum][rlNum]->tnum < fCurrentEvent ? fBar[layerNum][barNum][rlNum]->tnum : fCurrentEvent;
-
+    {
+	if(fCurrentEvent == 0)
+	    fCurrentEvent = fBar[layerNum][barNum][rlNum]-> tnum;
+	else
+	    fCurrentEvent = fBar[layerNum][barNum][rlNum]->tnum < fCurrentEvent ? fBar[layerNum][barNum][rlNum]->tnum : fCurrentEvent;
+    }
     for(int i = 0; i < 10; i++) {
 
       fBarTree[layerNum][barNum][rlNum]->GetEntry(i);

@@ -55,7 +55,7 @@ void PSD(int layerNum, int barNum)
 
           //Find the pedistal, peak, and trigger point (50% CFD)
 	  Double_t dPed = 0;
-	  Int_t iPeak = 0;
+	  Double_t dPeak = 0;
 	  UChar_t cPeakPos = 0;
 	  Double_t dStartTime = 0;
 	  UChar_t cFractPos = 0;
@@ -65,35 +65,37 @@ void PSD(int layerNum, int barNum)
 	      dPed += wave->ADC[ip];
 	  dPed /= cPedSize;
 
-	  //Find and validate peak
+	  //Find the peak value and peak position
 	  for(int ip = 0; ip < wave->nADC; ip++)
-	       if(iPeak <= wave->ADC[ip]-dPed)
+	       if(dPeak <= wave->ADC[ip]-dPed)
 	       {
-		   iPeak =  wave->ADC[ip]-dPed;
+		   dPeak =  wave->ADC[ip]-dPed;
 		   cPeakPos = ip;
 	       }
 	  //Need to validate?
 	  if(cPeakPos < cPedSize || cPeakPos >= wave->nADC - 50) //Used 50 because that's what the Koreans used
 	      nFailedTimes++;
 
-	  //Find the crossover
-	  Double_t dPeakh = iPeak*dFraction;
+	  //Find the position is crosses CFD point (should be lower, next point is higher)
+	  Double_t dPeakh = dPeak*dFraction;
 	  for(int cFractPos = cPeakPos; cFractPos >= cPedSize; cFractPos--)
-	      if(wave->ADC[cFractPos] <= dPeakh)
+	  {
+	      if( (wave->ADC[cFractPos] - dPed) == dPeakh)
+	      {
+		  dStartTime = cFractPos;
 		  break;
-	  //cFractPos is one below the half height
-	  //Check if interpolation is needed
-	  if(wave->ADC[cFractPos] == dPeakh)
-	  {
-	      dStartTime = cFractPos;
-	  }
-	  else
-	  {
-	      dStartTime = cFractPos + (0.5*iPeak - wave->ADC[cFractPos])/
-		  (wave->ADC[cFractPos]-wave->ADC[cFractPos+1]);
-	  }
+	      }
+	      if( (wave->ADC[cFractPos] - dPed) < dPeakh)
+	      {
+		  dStartTime = (dPeakh - (wave->ADC[cFractPos] - dPed))/
+		      (wave->ADC[cFractPos+1] - wave->ADC[cFractPos]);
 
-	  cout << dStartTime << endl;
+		  break;
+	      }
+	  }
+	  
+	  dStartTime += cFractPos;
+	  
 	  Double_t dFastGate = 0;
 	  Double_t dLongGate = 0;
 
@@ -129,7 +131,7 @@ void PSD(int layerNum, int barNum)
 	  //Fill the histograms
 	  hist[1][0][iLR]->Fill(dLongGate, dFastGate);
 	  hist[0][0][iLR]->Fill(wave->ADCSum, wave->ADCPart);
-	  hist[1][1][iLR]->Fill(dStartTime, iPeak);
+	  hist[1][1][iLR]->Fill(dStartTime, dPeak);
 	  hist[0][1][iLR]->Fill(wave->ADCTime/2, wave->ADCPeak);
 
 	  //Compare with korean values
