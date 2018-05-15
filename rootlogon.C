@@ -1,5 +1,8 @@
 void rootlogon() {
-  gSystem -> Load("DataStruct.so");
+  gSystem -> Load("lib/libDataStruct.so");
 
   gROOT -> ProcessLine(".x environment.C");
 }
+
+
+
