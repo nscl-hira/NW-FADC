@@ -11,7 +11,7 @@
 #include "TThread.h"
 #include "TH1.h"
 
-#include "DataStruct.h"
+#include "TCB.h"
 
 #define PC_DRAM_SIZE    4
 #define DATA_ARRAY_SIZE PC_DRAM_SIZE*1024*1024

@@ -55,33 +55,35 @@ all: $(SO) FADC_Conversion_root TCB_Conversion_root
 
 #Compile and link executables
 FADC_Conversion_root: FADC_Conversion_root_v1.cc $(OBJS) $(DICTO)
-	$(CXX) $(EXEFLAGS) -o $(BINDIR)/$@ $^
+	@echo "Building $@..."
+	@$(CXX) $(EXEFLAGS) -o $(BINDIR)/$@ $^
 TCB_Conversion_root: TCB_Conversion_root_v1.cc $(OBJS) $(DICTO)
-	$(CXX) $(EXEFLAGS) -o $(BINDIR)/$@ $^
+	@echo "Building $@..."
+	@$(CXX) $(EXEFLAGS) -o $(BINDIR)/$@ $^
 
 #Compile and link shared object
 $(SO): $(OBJS) $(DICTO)
-	$(CXX) $(SOFLAGS) $(LDFLAGS) -o $@ $^
+	@echo "Assembling the shared object $(LIBNAME)..."
+	@$(CXX) $(SOFLAGS) $(LDFLAGS) -o $@ $^
 
 
 #Rules to build all object files
 $(BUILDDIR)/%.o : $(SRCDIR)/%.cc $(INCLS)
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	@echo "Building $@..."
+	@$(CXX) $(CXXFLAGS) -c -o $@ $<
 $(BUILDDIR)/%.o : $(SRCDIR)/%.cpp $(INCLS)
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	@echo "Building $@..."
+	@$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-%.o : %.cc $(INCLS)
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
-%.o : %.cpp $(INCLS)
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 #Rules for dictionary generation
-$(DICTO): $(INCLS) 
-	rootcint -f $(LIBNAME)Dict.cxx -c $^ $(LIBNAME)LinkDef.h
-	mv $(LIBNAME)Dict_rdict.pcm $(LIBDIR)/
-#	g++ -o $@ -fPIC -c Dict.cxx `root-config --cflags`
-	$(CXX) $(CXXFLAGS) -c -o $@ $(LIBNAME)Dict.cxx
-	rm -f $(LIBNAME)Dict.cxx
+$(DICTO): $(INCLS)
+	@echo "Generating root library..."
+	@rootcint -f $(LIBNAME)Dict.cxx -c $^ $(LIBNAME)LinkDef.h
+	@mv $(LIBNAME)Dict_rdict.pcm $(LIBDIR)/
+#	@g++ -o $@ -fPIC -c Dict.cxx `root-config --cflags`
+	@$(CXX) $(CXXFLAGS) -c -o $@ $(LIBNAME)Dict.cxx
+	@rm -f $(LIBNAME)Dict.cxx
 
 
 .PHONY: clean

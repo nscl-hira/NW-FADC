@@ -1,4 +1,8 @@
-#include "DataStruct.h"
+#include "FADC.h"
+#include "TCB.h"
+#include "Bar.h"
+
+
 #include <iomanip>
 ClassImp( FADC )
 

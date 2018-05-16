@@ -8,7 +8,8 @@
 #include "TCanvas.h"
 #include "TH1.h"
 #include "TH2.h"
-#include "DataStruct.h"
+#include "FADC.h"
+
 #include <iomanip>
 
 int main( int argc, char** argv ){
