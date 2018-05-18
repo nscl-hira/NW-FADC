@@ -12,6 +12,6 @@
 *.rootmap
 *.o
 *.so
-
+*.old
 
 !unpack.sh

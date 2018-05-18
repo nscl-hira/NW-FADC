@@ -7,8 +7,13 @@
 #
 # Requires the LinkDef.h file to have the form $(LIBNAME)LinkDef.h and
 # be in the base directory.
+#
+# Files of type .cpp will be build into the shared objects
+# Files of type .cc are source code that can be build into an executable
 
-
+###############################
+##### User specified crap #####
+###############################
 
 # Specify the the binary, build, and source directories
 BUILDDIR = build
@@ -19,6 +24,10 @@ INCLDIR  = include
 
 #Set the name of the shared library and dictionary
 LIBNAME = DataStruct
+
+#################################
+##### System Specified crap #####
+#################################
 
 #Grab info on ROOT and compiler
 RC := root-config
@@ -34,7 +43,7 @@ SRCS += $(wildcard $(SRCDIR)/*.cc)
 
 
 #Turn create list of expected OBJ files
-OBJS = $(patsubst $(SRCDIR)%, $(BUILDDIR)%, $(filter %.o, $(SRCS:.cpp=.o ) $(SRCS:.cc=.o )))
+OBJS = $(patsubst $(SRCDIR)%, $(BUILDDIR)%, $(filter %.o, $(SRCS:.cpp=.o )))
 
 SO = $(LIBDIR)/lib$(LIBNAME).so
 DICTO = $(BUILDDIR)/$(LIBNAME)Dict.o
@@ -51,15 +60,15 @@ EXEFLAGS = $(shell $(RC) --cflags --libs) -I$(INCLDIR)
 
 default: all
 
-all: $(SO) FADC_Conversion_root TCB_Conversion_root
+all: $(SO) $(BINDIR)/FADC_Conversion_root $(BINDIR)/TCB_Conversion_root
 
 #Compile and link executables
-FADC_Conversion_root: FADC_Conversion_root_v1.cc $(OBJS) $(DICTO)
+$(BINDIR)/FADC_Conversion_root: $(SRCDIR)/FADC_Conversion_root_v1.cc $(OBJS) $(DICTO)
 	@echo "Building $@..."
-	@$(CXX) $(EXEFLAGS) -o $(BINDIR)/$@ $^
-TCB_Conversion_root: TCB_Conversion_root_v1.cc $(OBJS) $(DICTO)
+	@$(CXX) $(EXEFLAGS) -o $@ $^
+$(BINDIR)/TCB_Conversion_root: $(SRCDIR)/TCB_Conversion_root_v1.cc $(OBJS) $(DICTO)
 	@echo "Building $@..."
-	@$(CXX) $(EXEFLAGS) -o $(BINDIR)/$@ $^
+	@$(CXX) $(EXEFLAGS) -o $@ $^
 
 #Compile and link shared object
 $(SO): $(OBJS) $(DICTO)
@@ -81,17 +90,16 @@ $(DICTO): $(INCLS)
 	@echo "Generating root library..."
 	@rootcint -f $(LIBNAME)Dict.cxx -c $^ $(LIBNAME)LinkDef.h
 	@mv $(LIBNAME)Dict_rdict.pcm $(LIBDIR)/
-#	@g++ -o $@ -fPIC -c Dict.cxx `root-config --cflags`
 	@$(CXX) $(CXXFLAGS) -c -o $@ $(LIBNAME)Dict.cxx
 	@rm -f $(LIBNAME)Dict.cxx
 
 
 .PHONY: clean
 clean:
-	rm -rf *.so *.o *.pcm *Dict.cxx FADC_Conversion_root TCB_Conversion_root
-	rm -rf $(BUILDDIR)/*
-	rm -rf $(LIBDIR)/*
-	rm -rf $(BINDIR)/*
+	@rm -rf *.so *.o *.pcm *Dict.cxx
+	@rm -rf $(BUILDDIR)/*
+	@rm -rf $(LIBDIR)/*	
+	@rm -rf $(BINDIR)/*
 
 .PHONY: test
 test:

@@ -12,7 +12,9 @@
 #include "TStyle.h"
 int main( int argc, char** argv ){
   gStyle->SetOptStat(0);
-  //////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////
   //// EnvSetting
   char* TCBRawData;
   char* TCBConvData;
@@ -104,6 +106,7 @@ int main( int argc, char** argv ){
   ULong64_t Trig_num;
   ULong64_t Trig_ttime;
 
+  
   Int_t     nWAVE;
   UShort_t  Channel[NCH];
   ULong64_t CH_ttime[NCH];
@@ -242,7 +245,8 @@ int main( int argc, char** argv ){
       8 ,9 ,10,11,12,13,14,15,
       16,17,18,19,20,21,22,23,
       -1,-1,-1,-1,-1,-1,-1,-1};
-  /// NWABMap
+
+/// NWABMap
   Int_t  NWABMap[112]=
     {
       1,1,1,1,1,1,1,1,
@@ -294,9 +298,11 @@ int main( int argc, char** argv ){
       -1,-1,-1,-1,-1,-1,-1,-1,
       -1,-1,-1,-1,-1,-1,-1,-1,
       8 ,9 ,10,11,12,13,14,15};
+
   can->Draw();
   TH2D* hisWave = new TH2D("hisWave","hisWave",240,0,480,112,0,112);
   std::cout << "Loop" << std::endl;
+  
   for( int ievt = MINEVT ; ievt <= MAXEVT; ievt++){
   //for( int ievt = MINEVT ; ievt <= MINEVT+100000; ievt++){    
     hisWave->Reset();
@@ -337,9 +343,10 @@ int main( int argc, char** argv ){
 	TMPBModCH  [ibar][irl]=0;
       }
     }
-    
+
+    //Loop through TCB until the next event is found
     while( tcb->tcb_trigger_number < ievt ){
-      TCBEntry++;
+      TCBEntry++; //Starts at 0
       if( TCBEntry >= trtcb->GetEntries() ){ break; }
       trtcb->GetEntry( TCBEntry );
       if( tcb->tcb_trigger_number >= ievt ){ break; }
@@ -348,21 +355,31 @@ int main( int argc, char** argv ){
       Trig_ttime = tcb->tcb_ttime;
     }
     
-    // Don't think about tcb_trig_num > ievt
     nSPWAVE = 0;
-    for( int ifadc = 0; ifadc < 112; ifadc++){
-      if( trfadc[ifadc] == NULL ){ continue; }
-      while( fadc[ifadc]->tnum < ievt ){
+    //Loop through each FADC
+    for( int ifadc = 0; ifadc < 112; ifadc++)
+    {
+      if( trfadc[ifadc] == NULL )
+	continue;
+
+      //Loop though FADC until tNum is at or greater than ievt
+      while( fadc[ifadc]->tnum < ievt )
+      {
 	FADCEntry[ifadc]++;
-	if( FADCEntry[ifadc] >= trfadc[ifadc]->GetEntries() ){ break; }
+	if( FADCEntry[ifadc] >= trfadc[ifadc]->GetEntries() )
+	  break;
+	
 	trfadc[ifadc]->GetEntry( FADCEntry[ifadc] );
       }
-      if( fadc[ifadc]->tnum == ievt ){
-	//int ch = (fadc[ifadc]->mid-1)*4 + (fadc[ifadc]->cid-1);
+      
+      //If this fadc recorded data at this event do stuff
+      if( fadc[ifadc]->tnum == ievt )
+      {
 	int ch = ifadc;
 
 	bool bcrossed = false; 
-	if ( SPCHMap[ch] >= 0 ){ // Special Channel 
+	if ( SPCHMap[ch] >= 0 )// Special Channel
+	{
 	  SPChannel[nSPWAVE] = ch;
 	  for( int ip = 0; ip < NSMPL; ip++){
 	    SPWAVE[nSPWAVE][ip]	= fadc[ifadc]->ADC[ip];
@@ -375,8 +392,11 @@ int main( int argc, char** argv ){
 	    }
 	  }
 	  nSPWAVE++;
-	}else{
+	  
+	} else //It isn't a special channel
+	{
 	  if( ch < 0 || ch >= 112 ){ continue; }
+	  
 	  Channel[nWAVE] = ch;	  
 	  CH_ttime[nWAVE] = fadc[ifadc]->ttime;
 	  for( int ip = 0; ip < NSMPL; ip++){

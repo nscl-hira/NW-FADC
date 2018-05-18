@@ -6,5 +6,6 @@
 #pragma link C++ class FADC++;
 #pragma link C++ class TCB+;
 #pragma link C++ class Bar+;
+#pragma link C++ class EventBuilder++;
 
 #endif
