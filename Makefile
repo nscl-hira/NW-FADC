@@ -61,6 +61,7 @@ EXEFLAGS = $(shell $(RC) --cflags --libs) -I$(INCLDIR)
 default: all
 
 all: $(SO) $(BINDIR)/FADC_Conversion_root $(BINDIR)/TCB_Conversion_root
+sharedObject: $(SO)
 
 #Compile and link executables
 $(BINDIR)/FADC_Conversion_root: $(SRCDIR)/FADC_Conversion_root_v1.cc $(OBJS) $(DICTO)

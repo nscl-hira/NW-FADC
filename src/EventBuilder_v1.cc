@@ -356,6 +356,8 @@ int main( int argc, char** argv ){
     }
     
     nSPWAVE = 0;
+
+    
     //Loop through each FADC
     for( int ifadc = 0; ifadc < 112; ifadc++)
     {

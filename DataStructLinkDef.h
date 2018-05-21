@@ -7,5 +7,7 @@
 #pragma link C++ class TCB+;
 #pragma link C++ class Bar+;
 #pragma link C++ class EventBuilder++;
+#pragma link C++ class NWEvent+;
+
 
 #endif
