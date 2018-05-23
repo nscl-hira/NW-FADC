@@ -8,7 +8,7 @@
 #include "Bar.h"
 #include "TCB.h"
 
-class NWEvent {
+class NWEvent : public TObject {
 
 public:
   NWEvent();
@@ -40,6 +40,9 @@ private:
   const static int NBAR = 24;
   const static int NCH = 112;
   const static int NSMPL = 240;
+
+  void deleteAll();
+  void initAll();
   
   ClassDef( NWEvent, 1);
   

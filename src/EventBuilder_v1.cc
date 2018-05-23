@@ -70,6 +70,7 @@ int main( int argc, char** argv ){
   trtcb->GetEntry( TCBEntries -1 );
   ULong64_t MAXEVT = tcb->tcb_trigger_number;
   trtcb->GetEntry(0);
+  
   ULong64_t MINEVT = tcb->tcb_trigger_number;
   ULong64_t tcb_ttime0 = tcb->tcb_ttime;
 
@@ -351,6 +352,7 @@ int main( int argc, char** argv ){
       trtcb->GetEntry( TCBEntry );
       if( tcb->tcb_trigger_number >= ievt ){ break; }
     }
+    
     if( tcb->tcb_trigger_number == ievt ){
       Trig_ttime = tcb->tcb_ttime;
     }

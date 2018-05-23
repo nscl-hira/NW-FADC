@@ -51,8 +51,8 @@ private:
   //Temp data structures
   FADC *tempFADC[2][24][2]; //A/B BarNum R/L
 
-  NWEvent nwAEvent;
-  NWEvent nwBEvent;
+  NWEvent *nwEvent[2];
+
   
   TTree *outTree;
   TFile *outFile;

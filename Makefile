@@ -49,10 +49,10 @@ SO = $(LIBDIR)/lib$(LIBNAME).so
 DICTO = $(BUILDDIR)/$(LIBNAME)Dict.o
 
 #Set compiler flags
-CXXFLAGS = $(shell $(RC) --cflags) -fPIC -std=c++11 -I$(INCLDIR)
-SOFLAGS = --shared -std=c++11 
-LDFLAGS = $(shell $(RC) --ldflags --libs) -L$(LIBDIR)
-EXEFLAGS = $(shell $(RC) --cflags --libs) -I$(INCLDIR)
+CXXFLAGS = $(shell $(RC) --cflags) -fPIC -std=c++11 -I$(INCLDIR) -g
+SOFLAGS = --shared -std=c++11 -g
+LDFLAGS = $(shell $(RC) --ldflags --libs) -L$(LIBDIR) -g
+EXEFLAGS = $(shell $(RC) --cflags --libs) -I$(INCLDIR) -g
 
 #***************#
 #**** RULES ****#
