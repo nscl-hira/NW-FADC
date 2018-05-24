@@ -64,8 +64,8 @@ bool EventBuilder::init(Int_t runNum)
 
   nwEvent[0] = new NWEvent();
   nwEvent[1] = new NWEvent();
-  outTree->Branch("NWA", "NWEvent", &(nwEvent[0]), 32000, 1);
-  outTree->Branch("NWB", "NWEvent", &(nwEvent[0]), 32000, 1);
+  outTree->Branch("NWA", "NWEvent", &(nwEvent[0]), 32000, 2);
+  outTree->Branch("NWB", "NWEvent", &(nwEvent[1]), 32000, 2);
 
   //Successfuly loaded so return true
   validConfig = true;
@@ -176,111 +176,26 @@ void EventBuilder::buildEvents()
 	if(nWaves[iB][iBar] > 1)
 	{
 	  foundEvent = true;
-	  //std::cout << Form("There was actually an event in Wall %c and bar %d",
-	  //iB ? 'B':'A', iBar) << std::endl;
+	  //Found an event, so create a Bar and add it to nwEvent
+	  Bar *newBar = new Bar(iBar);
+	  newBar->Convert(tempFADC[iB][iBar][0], tempFADC[iB][iBar][1]);
 
-	  //There was a hit so record all of the information
-	  for(int i = 0; i < 240; i++)
-	  { //Save the waves
-	    std::cout << nwEvent[iB]->ADCRight << Form(" %d %d %d",iB,nwEvent[iB]->fmult, i) << std::endl;
-	    nwEvent[iB]->ADCRight[nwEvent[iB]->fmult][i] = tempFADC[iB][iBar][0]->ADC[i];
-	    nwEvent[iB]->ADCLeft[nwEvent[iB]->fmult][i]  = tempFADC[iB][iBar][1]->ADC[i];
-	  }
 	  
-	  nwEvent[iB]->fBarNum[nwEvent[iB]->fmult]      = iBar;
-	  nwEvent[iB]->fRight[nwEvent[iB]->fmult]       = tempFADC[iB][iBar][0]->ADCSum;
-	  nwEvent[iB]->fLeft[nwEvent[iB]->fmult]        = tempFADC[iB][iBar][1]->ADCSum;
-	  nwEvent[iB]->fFastRight[nwEvent[iB]->fmult]   = tempFADC[iB][iBar][0]->ADCPart;
-	  nwEvent[iB]->fFastLeft[nwEvent[iB]->fmult]    = tempFADC[iB][iBar][1]->ADCPart;
-	  nwEvent[iB]->fTimeRight[nwEvent[iB]->fmult]   = tempFADC[iB][iBar][0]->ADCTime; //in ns 
-	  nwEvent[iB]->fTimeLeft[nwEvent[iB]->fmult]    = tempFADC[iB][iBar][1]->ADCTime; //in ns
-	  nwEvent[iB]->fGeoMean[nwEvent[iB]->fmult]     =
-	    TMath::Sqrt(tempFADC[iB][iBar][0]->ADCSum*tempFADC[iB][iBar][1]->ADCSum);
-	  nwEvent[iB]->fFastGeoMean[nwEvent[iB]->fmult] =
-	    TMath::Sqrt(tempFADC[iB][iBar][0]->ADCPart*tempFADC[iB][iBar][1]->ADCPart);
-	  
+	  nwEvent[iB]->addBar(newBar);
 	  nwEvent[iB]->fTimestamp = evtTime;
-	  nwEvent[iB]->fmult++;
-
+	  
 	} //End loop over all bars
     }// End loop over wall
+
     if(foundEvent)
     {
-      std::cout << "Filling event" << std::endl;
+      //std::cout << "Filling event" << std::endl;
       outTree->Fill();
+
       if(outTree->GetEntries() < 3)
 	outTree->Show(outTree->GetEntries()-1);
     }
   } // End loop over all events    
-  
-    /*for(int iBar = 0; iBar < 24; iBar++)
-    {
-      if(nWaves[0][iBar] > 1)
-      {
-	//std::cout << Form("There was actually an event in Wall %c and bar %d",
-	//iB ? 'B':'A', iBar) << std::endl;
-	
-	//There was a hit so record all of the information
-	for(int i = 0; i < 240; i++)
-	{ //Save the waves
-	  nwAEvent.ADCRight[nwAEvent.fmult][i] = tempFADC[0][iBar][0]->ADC[i];
-	  nwAEvent.ADCLeft[nwAEvent.fmult][i]  = tempFADC[0][iBar][1]->ADC[i];
-	}
-	
-	nwAEvent.fBarNum[nwAEvent.fmult]      = iBar;
-	nwAEvent.fRight[nwAEvent.fmult]       = tempFADC[0][iBar][0]->ADCSum;
-	nwAEvent.fLeft[nwAEvent.fmult]        = tempFADC[0][iBar][1]->ADCSum;
-	nwAEvent.fFastRight[nwAEvent.fmult]   = tempFADC[0][iBar][0]->ADCPart;
-	nwAEvent.fFastLeft[nwAEvent.fmult]    = tempFADC[0][iBar][1]->ADCPart;
-	nwAEvent.fTimeRight[nwAEvent.fmult]   = tempFADC[0][iBar][0]->ADCTime; //in ns 
-	nwAEvent.fTimeLeft[nwAEvent.fmult]    = tempFADC[0][iBar][1]->ADCTime; //in ns
-	nwAEvent.fGeoMean[nwAEvent.fmult]     =
-	  TMath::Sqrt(tempFADC[0][iBar][0]->ADCSum*tempFADC[0][iBar][1]->ADCSum);
-	nwAEvent.fFastGeoMean[nwAEvent.fmult] =
-	  TMath::Sqrt(tempFADC[0][iBar][0]->ADCPart*tempFADC[0][iBar][1]->ADCPart);
-	
-	nwAEvent.fTimestamp = evtTime;
-	nwAEvent.fmult++;
-      }
-    } //End loop over wall A
-
-    
-  for(int iBar = 0; iBar < 24; iBar++)
-  {
-    if(nWaves[1][iBar] > 1)
-    {
-      //std::cout << Form("There was actually an event in Wall %c and bar %d",
-      //iB ? 'B':'A', iBar) << std::endl;
-      
-      //There was a hit so record all of the information
-      for(int i = 0; i < 240; i++)
-      { //Save the waves
-	nwBEvent.ADCRight[nwBEvent.fmult][i] = tempFADC[1][iBar][0]->ADC[i];
-	nwBEvent.ADCLeft[nwBEvent.fmult][i]  = tempFADC[1][iBar][1]->ADC[i];
-      }
-      
-      nwBEvent.fBarNum[nwBEvent.fmult]      = iBar;
-      nwBEvent.fRight[nwBEvent.fmult]       = tempFADC[1][iBar][0]->ADCSum;
-      nwBEvent.fLeft[nwBEvent.fmult]        = tempFADC[1][iBar][1]->ADCSum;
-      nwBEvent.fFastRight[nwBEvent.fmult]   = tempFADC[1][iBar][0]->ADCPart;
-      nwBEvent.fFastLeft[nwBEvent.fmult]    = tempFADC[1][iBar][1]->ADCPart;
-      nwBEvent.fTimeRight[nwBEvent.fmult]   = tempFADC[1][iBar][0]->ADCTime; //in ns 
-      nwBEvent.fTimeLeft[nwBEvent.fmult]    = tempFADC[1][iBar][1]->ADCTime; //in ns
-      nwBEvent.fGeoMean[nwBEvent.fmult]     =
-	TMath::Sqrt(tempFADC[1][iBar][0]->ADCSum*tempFADC[1][iBar][1]->ADCSum);
-      nwBEvent.fFastGeoMean[nwBEvent.fmult] =
-	TMath::Sqrt(tempFADC[1][iBar][0]->ADCPart*tempFADC[1][iBar][1]->ADCPart);
-      
-      nwBEvent.fTimestamp = evtTime;
-      nwBEvent.fmult++;
-    }
-  } //End loop over Wall B
-    
-  outTree->Fill();
-  if(outTree->GetEntries() < 3)
-    outTree->Show(outTree->GetEntries()-1);
-   
-    } //End loop over events*/
   
   std::cout << "Finished loop over events: saving file" << outFile->GetName() << std::endl;
   outFile->Write();

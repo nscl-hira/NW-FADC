@@ -2,26 +2,34 @@
 #define BAR__H__
 #include <iostream>
 #include "TObject.h"
-
+#include "FADC.h"
 class Bar : public TObject {
  public:
-  Bar();
+  Bar(Int_t barNum = -1);
   virtual ~Bar();
-  Int_t ID;
-  Int_t ABID;// 0 : A, 1 : B
-  Double_t nHit;
-  Double_t TimeMean;
-  Double_t TimeDiff;
-  Double_t GeoMeanSum;// Geometric mean sum
-  Double_t GeoMeanPrt;// Geometric mean part 
-  Double_t Time[2];
-  Double_t Peak[2];
-  Double_t Ped[2];
-  Double_t Sum[2];
-  Double_t Part[2];
-  Int_t    ChID[2];
 
-  void Init();
+
+  Int_t fnumBar;
+  Short_t ADCLeft[240];
+  Short_t ADCRight[240];
+  Double_t fLeft;
+  Double_t fRight;
+  Double_t fFastLeft;
+  Double_t fFastRight;
+  Double_t fGeoMean;
+  Double_t fFastGeoMean;
+  Double_t fTimeLeft;
+  Double_t fTimeRight;
+
+  //Take the two ends and turn it into a bar
+  //Fills everything but the barNumber
+  void Convert(FADC *fadcRight, FADC *fadcLeft);
+  void Convert(FADC *fadcRight, FADC *fadcLeft,
+	       Short_t pedLength, Short_t fastWindow, Short_t longWindow,
+	       Double_t CFDHeight)
+  {
+    Convert(fadcRight, fadcLeft);
+  }
   
   ClassDef( Bar, 1 )
 };
