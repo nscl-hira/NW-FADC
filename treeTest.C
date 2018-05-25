@@ -4,42 +4,42 @@
 
 #include "include/NWEvent.h"
 
-void treeTest()
+void writeTree()
 {
   NWEvent *ev = new NWEvent();
   NWEvent *ev2 = new NWEvent();
-  ev->reset();
 
   TFile *file = new TFile("test.root", "recreate");
-  TTree *tree = new TTree("test", "Test Tree");
-  tree->Branch("NWA", "NWEvent", &ev, 8000,99);
-  tree->Branch("NWB", "NWEvent", &ev2, 8000,99);
+  TTree *NWTree[2];
+  NWTree[0] = new TTree("NWA", "NWA");
+  NWTree[1] = new TTree("NWB", "NWB");
 
-  for(int i = 0; i < 10; i++)
+  NWEvent event[2];
+  Short_t ADCRight[2][24][240];
+  Int_t fmulti[2];
+
+  //Create tree structure
+  for(int iB = 0; iB < 2; iB++)
   {
-    ev->reset();
-    ev2->reset();
-    ev->fLeft[0] = i;
-    for(int iii =0; iii < 240; iii++)
-    {
-      ev->ADCLeft[0][iii] = iii;
-      ev2->ADCRight[0][iii] = 1;
-    }
-    
-    ev2->fRight[0] = i;
-    ev->fmult++;
-    ev->fTimestamp++;
-    ev2->fmult++;
-    ev2->fTimestamp++;
-      
-    
-    tree->Fill();
-    //if(i<3)
-    //  tree->Show(i);
+    NWTree[iB]->Branch("fmulti", &event[iB].fmulti, "fmulti/I");
+    NWTree[iB]->Branch("ADCRight", event[iB].ADCRight, "ADCRight[fmulti][240]/S");
   }
   
-  tree->Write();
-  tree->Print();
+  for(int ievt = 0; ievt < 10; ievt++)
+  for(int iB = 0; iB < 2; iB++)
+  {
+    event[iB].fmulti = 0;
+    for(int smpl =0; smpl < 240; smpl++)
+    {
+      event[iB].ADCRight[event[iB].fmulti][smpl] =
+	iB == 0 ? smpl : 240-smpl;
+    }
+    event[iB].fmulti++;
+    NWTree[iB]->Fill();
+  }
+  
+  NWTree[0]->Write();
+  NWTree[1]->Write();
   file->Close();
   
 }
@@ -47,18 +47,35 @@ void treeTest()
 void readTree()
 {
   TFile *file = new TFile("test.root");
-  TTree *tree = (TTree*)file->Get("test");
+  TTree *NW[2];
+  NW[0] = (TTree*)file->Get("NWA");
+  NW[1] = (TTree*)file->Get("NWB");
 
-  NWEvent ev;
-  tree->SetMakeClass(1);
-  tree->SetBranchAddress("NWB", &ev);
-
-  tree->GetEntry(1);
+  Int_t fmulti[2];
+  Short_t ADCRight[2][24][240];
+  for(int iB = 0; iB < 2; iB++)
+  {
+    NW[iB]->SetBranchAddress("fmulti", &fmulti[iB]);
+    NW[iB]->SetBranchAddress("ADCRight", &ADCRight[iB]);
+  }
+  
+  NW[0]->GetEntry(0);
+  NW[1]->GetEntry(0);
+  
+  std::cout << Form("fmulti: %d %d", fmulti[0], fmulti[1] ) << std::endl;
+  
   TH1F *hist = new TH1F("testHist", "test", 240, 0, 240);
+  TH1F *hist2 = new TH1F("testHist2", "test", 240, 0, 240);
+
   for(int i = 0; i < 240; i++)
-    hist->Fill(i, ev.ADCLeft[0][i]);
+  {
+    
+    hist->Fill(i, ADCRight[0][fmulti[0]-1][i]);
+    hist2->Fill(i, ADCRight[1][fmulti[1]-1][i]);
+  }
+
 
   hist->Draw("hist");
-    
+  hist2->Draw("hist");    
 }
   

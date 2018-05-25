@@ -14,7 +14,6 @@
 #include "TSystem.h"
 #include "TStyle.h"
 
-#include "Bar.h"
 #include "FADC.h"
 #include "NWEvent.h"
 #include "TCB.h"
@@ -51,11 +50,10 @@ private:
   //Temp data structures
   FADC *tempFADC[2][24][2]; //A/B BarNum R/L
 
-  NWEvent *nwEvent[2];
-
-  
-  TTree *outTree;
+  NWEvent event[2];
+  TTree *outTree[2];
   TFile *outFile;
+  
   //Channel Mappings
   Int_t ChannelBarMap[112] =
     {

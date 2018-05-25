@@ -3,47 +3,39 @@
 
 #include <iostream>
 #include "TObject.h"
-
 #include "FADC.h"
-#include "Bar.h"
-#include "TCB.h"
+#include "TMath.h"
 
 class NWEvent : public TObject {
-
-public:
-  NWEvent();
-  virtual ~NWEvent();
-
-  void reset();
-
-  
-  Int_t fmult;
-  ULong_t fTimestamp;
-  
-  //Arrays of size [fmult][NSMPL]
-  Short_t  **ADCRight;   //[fmult][240]
-  Short_t  **ADCLeft;    //[fmult][240]
-
-  //Arrays of size fmult
-  Int_t    *fBarNum;      //[fmult]
-  Double_t *fLeft;        //[fmult]
-  Double_t *fRight;       //[fmult]
-  Double_t *fFastLeft;    //[fmult]
-  Double_t *fFastRight;   //[fmult]
-  Double_t *fTimeLeft;    //[fmult]
-  Double_t *fTimeRight;   //[fmult]
-  Double_t *fGeoMean;     //[fmult]
-  Double_t *fFastGeoMean; //[fmult]
-  
-  
 private:
   const static int NBAR = 24;
   const static int NCH = 112;
   const static int NSMPL = 240;
 
-  void deleteAll();
-  void initAll();
+ 
+public:
+  NWEvent();
+  virtual ~NWEvent();
   
+  Int_t fmulti;
+  ULong64_t fTimestamp;
+
+  Int_t   fBarNum[NBAR];
+  Double_t fGeoMean[NBAR];
+  Double_t fFastGeoMean[NBAR];
+  
+  Short_t  ADCRight[NBAR][NSMPL];
+  Double_t fRight[NBAR];
+  Double_t fFastRight[NBAR];
+  Double_t fTimeRight[NBAR];
+
+  Short_t  ADCLeft[NBAR][NSMPL];
+  Double_t fLeft[NBAR];
+  Double_t fFastLeft[NBAR];
+  Double_t fTimeLeft[NBAR];
+  
+  void AddBar(Int_t barNum, FADC *fadcRight, FADC *fadcLeft);
+  void Clear();
   ClassDef( NWEvent, 1);
   
 };

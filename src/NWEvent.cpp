@@ -4,80 +4,62 @@ ClassImp(NWEvent)
 
 NWEvent::NWEvent()
 {
-  initAll();
-  reset();
+//  Bars = new Bar*[NBAR];
 }
 
 NWEvent::~NWEvent()
 {
-  deleteAll();
+//  delete [] Bars;
 }
 
-void NWEvent::deleteAll()
+void NWEvent::Clear()
 {
-   for(int i = 0; i < NBAR; i++)
-  {
-    delete [] ADCLeft[i];
-    delete [] ADCRight[i];
-  }
-
-  delete [] fBarNum;
-  delete [] fLeft;
-  delete [] fRight;
-  delete [] fFastLeft;
-  delete [] fFastRight;
-  delete [] fTimeLeft;
-  delete [] fTimeRight;
-  delete [] fGeoMean;
-  delete [] fFastGeoMean;
-}
-
-void NWEvent::initAll()
-{
-  ADCLeft = new Short_t*[NBAR];
-  ADCRight = new Short_t*[NBAR];
-  for(int i =0; i < NBAR; i++)
-  {
-    ADCLeft[i] = new Short_t[NSMPL];
-    ADCRight[i] = new Short_t[NSMPL];
-  }
-  
-  fBarNum      = new Int_t[NBAR];
-  fLeft        = new Double_t[NBAR];
-  fRight       = new Double_t[NBAR];
-  fFastLeft    = new Double_t[NBAR];
-  fFastRight   = new Double_t[NBAR];
-  fTimeLeft    = new Double_t[NBAR];
-  fTimeRight   = new Double_t[NBAR];
-  fGeoMean     = new Double_t[NBAR];
-  fFastGeoMean = new Double_t[NBAR];
-
-}
-void NWEvent::reset()
-{
-  fmult = 0;
+  fmulti = 0;
   fTimestamp = 0;
-
-  std::cout << "Adress of Left: " << ADCLeft << std::endl;
-  for(int i = 0; i < NBAR; i++)
+  /*for(int iBar = 0; iBar < NBAR; iBar++)
   {
-    for(int j = 0; j < NSMPL; j++)
+    fBarNum[iBar] = 0;
+    fGeoMean[iBar] = 0;
+    fFastGeoMean[iBar] = 0;
+
+    fLeft[iBar] = 0;
+    fFastLeft[iBar] = 0;
+    fTimeLeft[iBar] = 0;
+
+    fRight[iBar] = 0;
+    fFastRight[iBar] = 0;
+    fTimeRight[iBar] = 0;
+
+    for(int smpl = 0; smpl<NSMPL; smpl++)
     {
-      
-      ADCLeft[i][j]  = 0;
-      ADCRight[i][j] = 0;
+      ADCRight[iBar][smpl] = 0;
+      ADCLeft[iBar][smpl] = 0;
     }
-    
-    fBarNum[i] = 0;
-    fLeft[i] = 0;
-    fRight[i] = 0;
-    fFastLeft[i] = 0;
-    fFastRight[i] = 0;
-    fTimeLeft[i] = 0;
-    fTimeRight[i] = 0;
-    fGeoMean[i] = 0;
-    fFastGeoMean[i] = 0;
   }
-  
+  */
 }
 
+
+void NWEvent::AddBar(Int_t barNum, FADC *fadcRight, FADC *fadcLeft)
+{
+  fBarNum[fmulti] = barNum;
+
+  //Copy over the waveforms
+  for(int smpl = 0; smpl < NSMPL; smpl++)
+  {
+    ADCRight[fmulti][smpl] = fadcRight->ADC[smpl];
+    ADCLeft[fmulti][smpl]  = fadcLeft->ADC[smpl];
+  }
+
+  fRight[fmulti]     = fadcRight->ADCSum;
+  fFastRight[fmulti] = fadcRight->ADCPart;
+  fTimeRight[fmulti] = fadcRight->ADCTime;
+
+  fLeft[fmulti]     = fadcLeft->ADCSum;
+  fFastLeft[fmulti] = fadcLeft->ADCPart;
+  fTimeLeft[fmulti] = fadcLeft->ADCTime;
+
+  fGeoMean[fmulti]     = TMath::Sqrt(fLeft[fmulti]*fRight[fmulti]);
+  fFastGeoMean[fmulti] = TMath::Sqrt(fFastLeft[fmulti]*fFastRight[fmulti]);
+  fmulti++;
+}
