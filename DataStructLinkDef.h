@@ -9,6 +9,7 @@
 #pragma link C++ class TCB+;
 #pragma link C++ class EventBuilder++;
 #pragma link C++ class NWEvent+;
+#pragma link C++ class SignalProcessor+;
 
 
 

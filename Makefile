@@ -2,7 +2,7 @@
 # Adam Anthony
 # May 5, 2018
 # Generates a shared object of name $(LIBNAME), including the
-# correct ROOT dictionary. Every source (.cc or.cpp) file in $(SRCDIR) is compiled
+# correct ROOT dictionary. Every source (.cpp) file in $(SRCDIR) is compiled
 # into the shared object. The outputed object is in $(LIBDIR).
 #
 # Requires the LinkDef.h file to have the form $(LIBNAME)LinkDef.h and
@@ -49,14 +49,20 @@ SO = $(LIBDIR)/lib$(LIBNAME).so
 DICTO = $(BUILDDIR)/$(LIBNAME)Dict.o
 
 #Set compiler flags
-CXXFLAGS = $(shell $(RC) --cflags) -fPIC -std=c++11 -I$(INCLDIR) -g
-SOFLAGS = --shared -std=c++11 -g
-LDFLAGS = $(shell $(RC) --ldflags --libs) -L$(LIBDIR) -g
-EXEFLAGS = $(shell $(RC) --cflags --libs) -I$(INCLDIR) -g
+CXXFLAGS = $(shell $(RC) --cflags) -fPIC -std=c++11 -I$(INCLDIR)
+SOFLAGS = --shared -std=c++11
+LDFLAGS = $(shell $(RC) --ldflags --libs) -L$(LIBDIR)
+EXEFLAGS = $(shell $(RC) --cflags --libs) -I$(INCLDIR)
 
 #***************#
 #**** RULES ****#
 #***************#
+
+debug: CXXFLAGS += -g -DDEBUG
+debug: SOFLAGS += -g -DDEBUG
+debug: LDFLAGS += -g -DDEBUG
+debug: EXEFLAGS += -g -DDEBUG
+debug: all
 
 default: all
 
@@ -87,9 +93,9 @@ $(BUILDDIR)/%.o : $(SRCDIR)/%.cpp $(INCLS)
 
 
 #Rules for dictionary generation
-$(DICTO): $(INCLS)
+$(DICTO): $(INCLS) $(LIBNAME)LinkDef.h
 	@echo "Generating root library..."
-	@rootcint -f $(LIBNAME)Dict.cxx -c $^ $(LIBNAME)LinkDef.h
+	@rootcint -f $(LIBNAME)Dict.cxx -c $^
 	@mv $(LIBNAME)Dict_rdict.pcm $(LIBDIR)/
 	@$(CXX) $(CXXFLAGS) -c -o $@ $(LIBNAME)Dict.cxx
 	@rm -f $(LIBNAME)Dict.cxx

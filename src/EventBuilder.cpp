@@ -68,7 +68,8 @@ bool EventBuilder::init(Int_t runNum)
   {
     outTree[iB]->Branch("fmulti",     &event[iB].fmulti,     "fmulti/I");
     outTree[iB]->Branch("fTimestamp", &event[iB].fTimestamp, "fTimestamp/l");
-    
+    outTree[iB]->Branch("fBarNum", event[iB].fBarNum, "fBarNum[fmulti]/I");
+      
     outTree[iB]->Branch("ADCRight", event[iB].ADCRight, "ADCRight[fmulti][240]/S");
     outTree[iB]->Branch("ADCLeft", event[iB].ADCLeft, "ADCLeft[fmulti][240]/S");
 
@@ -126,8 +127,9 @@ void EventBuilder::buildEvents()
   for(auto ievt = MinEvt; ievt < MaxEvt; ievt++)
   {
     if((ievt-MinEvt) % ( (MaxEvt-MinEvt)/250 ) == 0)
-      std::cout << Form("%2.1f%%", ((double)(ievt-MinEvt))/(MaxEvt-MinEvt)*100.)
-		<< std::endl;
+      std::cout << Form("%2.1f%%\r", ((double)(ievt-MinEvt))/(MaxEvt-MinEvt)*100.)
+		<< std::flush;
+
 
     //Just truncate the ammount of data read in
 //    if( (double)(ievt-MinEvt)/(MaxEvt-MinEvt)*100 > 5)
@@ -196,7 +198,7 @@ void EventBuilder::buildEvents()
 	if(nWaves[iB][iBar] >= 2)
 	{
 	  event[iB].fTimestamp = evtTime;
-	  event[iB].AddBar(iBar+1, tempFADC[iB][iBar][0], tempFADC[iB][iBar][0]);
+	  event[iB].AddBar(iBar, tempFADC[iB][iBar][0], tempFADC[iB][iBar][1]);
 	  foundEvent = true;
 	}//End loop over all bars in a wall
 
