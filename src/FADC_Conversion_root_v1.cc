@@ -52,6 +52,7 @@ int main( int argc, char** argv ){
   //Get raw FADC data
   TFile* tf = new TFile(ifilename.c_str());
   TTree* tr_fadc = (TTree*)tf->Get("FADCBTree");
+
   if( tr_fadc == NULL ){
     std::cout << ifilename.c_str() << " has Error" << std::endl; 
     return -1;
@@ -64,7 +65,8 @@ int main( int argc, char** argv ){
   TFile* otf = new TFile(ofilename.c_str(),"recreate");
   TTree* otr[4];
   FADC* wave = new FADC();
-  Int_t BinEventNumber = 0; 
+  Int_t BinEventNumber = 0;
+  
   for( int i = 0; i< 4; i++){
     otr[i] = new TTree(Form("Tree_%d",i),"");
     otr[i]->Branch("BinEventNumber",&BinEventNumber,"BinEventNumber/I");
@@ -77,6 +79,7 @@ int main( int argc, char** argv ){
   TH1D* hisChannel = new TH1D("hisChannel","hisChannel",4,0,4);
   TH1D* hisCHData  = new TH1D("hisCHData","hisCHData",1000,0,1000);
   TH1D* hisPeak[4];
+  
   for( int i = 0; i< 4; i++){
     hisWave[i]    = new TH2D(Form("hisWave_%d",i),
 			     Form("hisWave_%d",i),
@@ -109,13 +112,17 @@ int main( int argc, char** argv ){
   bool GoodData = true;
   Int_t nSkipped   = 0;
   Int_t nSkippedCH = 0; 
+
   for( int ievt = 0; ievt < tr_fadc->GetEntries(); ievt++){
+
     tr_fadc->GetEntry(ievt);
     off = 0;    
     BinEventNumber++;
+
     while( off < 8192 && GoodData ){
       wave->Clear();
       wave->Convert(FADCData, off );
+
       wave->evtn = evtn;
       off += 256;
       evtn++;
@@ -143,6 +150,7 @@ int main( int argc, char** argv ){
       //if( evtn % 100000 == 0 ){ otr[wave->cid-1]->AutoSave("SaveSelf Overwrite");}
     }
   }
+  
   //std::cout<< "nSkipped  : " << nSkipped << std::endl;
   //std::cout<< "nSkippedCH: " << nSkippedCH << std::endl;
   ULong64_t Estimated = tr_fadc->GetEntries()*8192/256;

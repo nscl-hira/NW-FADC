@@ -29,12 +29,44 @@ void loadRun(int runNum)
     NW[iB]->SetBranchAddress("fBarNum", event[iB].fBarNum);
     NW[iB]->SetBranchAddress("ADCRight", event[iB].ADCRight);
     NW[iB]->SetBranchAddress("ADCLeft", event[iB].ADCLeft);
+    NW[iB]->SetBranchAddress("fGeoMean", event[iB].fGeoMean);
+    NW[iB]->SetBranchAddress("fFastGeoMean", event[iB].fFastGeoMean);
   }
 }
 
 void PSD(bool iB, Int_t bar)
 {
-  
+  TH2D *psdHist = new TH2D(Form("psd%d", bar+1), Form("PSD Bar %d",bar+1),
+			   1000,0,5000,
+			   1000,0,5000);
+
+  for(ULong64_t evt = 0; evt < NW[iB]->GetEntries(); evt++)
+  {
+    NW[iB]->GetEntry(evt);
+    //Loop through each multilpicity and look for the right bar
+    for(int i = 0; i < event[iB].fmulti; i++)
+    {
+      if(event[iB].fBarNum[i] != bar)
+	continue;
+
+      //This is the bar we are looking for
+      sigP.SetWave(event[iB].ADCRight[i], 240);
+      Double_t fastGateR = sigP.GetFastQDC();
+      Double_t longGateR = sigP.GetQDC();
+
+      sigP.SetWave(event[iB].ADCLeft[i], 240);
+      Double_t fastGateL = sigP.GetFastQDC();
+      Double_t longGateL = sigP.GetQDC();
+
+      psdHist->Fill(TMath::Sqrt(longGateR * longGateL),
+		    TMath::Sqrt(fastGateR * fastGateL));
+
+      //psdHist->Fill(event[iB].fGeoMean[i],
+      //	    event[iB].fFastGeoMean[i]);
+    }
+  }
+  //Draw the filled histogram
+  psdHist->Draw("colz");
 }
 
 

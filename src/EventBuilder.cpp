@@ -29,16 +29,32 @@ bool EventBuilder::init(Int_t runNum)
 		<< std::endl;
       return false;
     }
+    
     for(int i = 0; i < 4; i++)
     {
-      int iTree = iFile*4 + 1;
+      int iTree = iFile*4 + i;
+      //std::cout << Form("iTree: %d = %d*4 + %d",iTree, iFile, i) << std::endl;
       trFADC[iTree] = (TTree*)fADC[iFile]->Get(Form("Tree_%d",i));
 
       //Set branch addresses for tree
       fadc[iTree] = new FADC();
-      if( trFADC[iTree] == nullptr) continue;
+      if( trFADC[iTree] == nullptr)
+      {
+	std::cout << Form("No tree %d", iTree) << std::endl;
+	continue;
+      }
       trFADC[iTree]->SetBranchAddress("wave", &(fadc[iTree]));
-      if(trFADC[iTree]->GetEntries() > 0) trFADC[iTree]->GetEntry(0);
+      if(trFADC[iTree]->GetEntries() > 0)
+      {
+	if(BarIDMap[iTree] < 0)
+	  std::cout << Form("Have %d %d %d at %d", BarIDMap[iTree], NWABMap[iTree], NWRL[iTree], iTree)
+		    << std::endl;
+	
+	trFADC[iTree]->GetEntry(0);
+      }
+      else
+	std::cout << Form("Missing %d %d %d", BarIDMap[iTree], NWABMap[iTree], NWRL[iTree])
+		  << std::endl;
     } //End loop over trees in file
   } //End loop over files
   
@@ -127,7 +143,7 @@ void EventBuilder::buildEvents()
   for(auto ievt = MinEvt; ievt < MaxEvt; ievt++)
   {
     if((ievt-MinEvt) % ( (MaxEvt-MinEvt)/250 ) == 0)
-      std::cout << Form("%2.1f%%\r", ((double)(ievt-MinEvt))/(MaxEvt-MinEvt)*100.)
+      std::cout << Form("\r%2.1f%%", ((double)(ievt-MinEvt))/(MaxEvt-MinEvt)*100.)
 		<< std::flush;
 
 
@@ -163,6 +179,7 @@ void EventBuilder::buildEvents()
       if(trFADC[ifadc] == nullptr)
 	continue;
 
+      
       //Advance to the next event at or after ievt
       while(fadc[ifadc]->tnum < ievt)
       {
