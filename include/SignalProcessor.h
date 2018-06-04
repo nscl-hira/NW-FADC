@@ -18,7 +18,8 @@ public:
 
   void SetWave(Short_t* wave, UInt_t length);
   void ChangeWave();
-
+  bool GetStatus() { return !(_flags & _fFail); };
+  
   //These fucntions checks _flags and if the waveform has been updated
   //they redo the calculation, otherwise they just return the stored value
   Double_t GetPedistal();
@@ -52,12 +53,13 @@ private:
   UInt_t waveLen;
   
   /** Variables to controll the behavior of the analysis **/
-  Int_t fastLen;        //The length of the fast QDC gate
-  Int_t longLen;        //The length of the long QDC gate. -1 => Go to end of waveform
-  Int_t pedLen;         //Number of samples to average for the pedistal  
-  Int_t gateOff;        //Number of samples to take before the start time
-  Double_t cfdFrac;     //Faction to use for CFD
-    
+  Int_t fastLen;     //The length of the fast QDC gate
+  Int_t longLen;     //The length of the long QDC gate. -1 => Go to end of waveform
+  Int_t pedLen;      //Number of samples to average for the pedistal  
+  Int_t gateOff;     //Number of samples to take before the start time
+  Double_t cfdFrac;  //Faction to use for CFD
+  Short_t minHeight; //The minimum height of  peak to be considered a valid event
+  
   /** Variable to hold the state of the analysis **/
   // These bits are set to 1 when they are up-to-date
   // Flags can be turned on like  _flags |= _fPed

@@ -89,7 +89,7 @@ Double_t SignalProcessor::GetTime()
   if(!(_flags & _fPeak))
     doPeak();
   _flags |= (_fPed | _fPeak);
-
+  
   if(!(_flags & _fTime))
   {
     doCFD();
@@ -125,6 +125,11 @@ void SignalProcessor::doPeak()
       peakVal = wave[ip] - pedVal;
       peakPos = ip;
     }
+
+  if(peakPos < pedLen ||
+     peakPos >= waveLen - (longLen - fastLen) ||
+     peakVal < minHeight)
+    _flags |= _fFail;
 }
 
 
@@ -152,6 +157,7 @@ void SignalProcessor::doCFD()
       timeVal += ip;
       break;
     }
+    
   }//End loop to look for time pos
 }
 
@@ -168,6 +174,7 @@ void SignalProcessor::doQDC()
   {
     startPos = 0;
     fastEnd = gateOff + fastLen;
+    longEnd = gateOff + longLen;
   }
 
   //Check if the end-point is too high
@@ -187,5 +194,8 @@ void SignalProcessor::doQDC()
       fastVal += wave[ip] - pedVal;
     longVal += wave[ip] - pedVal;
   }
+
+  if(fastVal < 0 || longVal < 0)
+    _flags |= _fFail;
   
 }

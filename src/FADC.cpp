@@ -1,5 +1,6 @@
 #include "FADC.h"
 
+
 #include <iomanip>
 ClassImp( FADC )
 
@@ -101,60 +102,61 @@ void FADC::Convert(UShort_t* data, int off){
   ADCPed  = 0.;
   ADCTime = 0.;
 
-  //Find the peak
-  int ADCPeakP = 0;
-  for( int ip = 0; ip < nADC; ip++){
-    if( ADCPeak < ADC[ip] ){
-      ADCPeak = ADC[ip];
-      ADCPeakP= ip;
-    }
-  }
+  // //Find the peak
+  // int ADCPeakP = 0;
+  // for( int ip = 0; ip < nADC; ip++){
+  //   if( ADCPeak < ADC[ip] ){
+  //     ADCPeak = ADC[ip];
+  //     ADCPeakP= ip;
+  //   }
+  // }
 
-  //Make sure peak isn't in the pedistal or at the end
-  if( ADCPeak < 20 || ADCPeakP >= nADC - 50 ){
-    ADCTime=-1;
-  }
+  // //Make sure peak isn't in the pedistal or at the end
+  // if( ADCPeak < 20 || ADCPeakP >= nADC - 50 ){
+  //   ADCTime=-1;
+  // }
   
-  /// pedestal
-  for( int ip = 0; ip < 20; ip++){
-    ADCPed += ADC[ip];
-  }
-  ADCPed = ADCPed/20.;
-  ADCPeak = ADCPeak-ADCPed;
+  // /// pedestal
+  // for( int ip = 0; ip < 20; ip++){
+  //   ADCPed += ADC[ip];
+  // }
+  // ADCPed = ADCPed/20.;
+  // ADCPeak = ADCPeak-ADCPed;
   
-  /// ADCTime
-  // Get's time in ns of the half height (each block is 2ns)
-  for( int ip = ADCPeakP; ip >=20; ip--){
-    if( ADC[ip] -ADCPed == 0.5*ADCPeak ){
-      ADCTime = ip*2;
-      break;
-    }
-    if( ADC[ip] -ADCPed < 0.5*ADCPeak ){ //DO interpolation
-      ADCTime = ip*2 + 2*(0.5*ADCPeak -(ADC[ip]-ADCPed))/(ADC[ip+1]-ADC[ip]);
-      break;
-    }
-  }
+  // /// ADCTime
+  // // Get's time in ns of the half height (each block is 2ns)
+  // for( int ip = ADCPeakP; ip >=20; ip--){
+  //   if( ADC[ip] -ADCPed == 0.5*ADCPeak ){
+  //     ADCTime = ip*2;
+  //     break;
+  //   }
+  //   if( ADC[ip] -ADCPed < 0.5*ADCPeak ){ //DO interpolation
+  //     ADCTime = ip*2 + 2*(0.5*ADCPeak -(ADC[ip]-ADCPed))/(ADC[ip+1]-ADC[ip]);
+  //     break;
+  //   }
+  // }
   
-  //// ADCSum / ADCPart
-  Int_t trig_point       = (int)(ADCTime/2);
-  Int_t LowLimit         = trig_point - 10;
-  Int_t HighLimitforPart = trig_point + 20;
-  Int_t HighLimitforSum  = trig_point + 70;
-  if( LowLimit < 0 ){
-    LowLimit = 0;
-    HighLimitforPart = 30;
-  }
-  if( HighLimitforSum >= nADC ){
-    HighLimitforSum  = nADC-1; 
-    HighLimitforPart = nADC-51;
-    LowLimit = nADC-1-80;
-  }
-  for( int ip = LowLimit; ip < HighLimitforPart; ip++){
-    ADCPart += ADC[ip]-ADCPed;
-  }
-  for( int ip = LowLimit; ip < HighLimitforSum; ip++){
-    ADCSum += ADC[ip]-ADCPed;
-  }
+  // //// ADCSum / ADCPart
+  // Int_t trig_point       = (int)(ADCTime/2);
+  // Int_t LowLimit         = trig_point - 10;
+  // Int_t HighLimitforPart = trig_point + 20;
+  // Int_t HighLimitforSum  = trig_point + 70;
+  // if( LowLimit < 0 ){
+  //   LowLimit = 0;
+  //   HighLimitforPart = 30;
+  // }
+  // if( HighLimitforSum >= nADC ){
+  //   HighLimitforSum  = nADC-1; 
+  //   HighLimitforPart = nADC-51;
+  //   LowLimit = nADC-1-80;
+  // }
+  // for( int ip = LowLimit; ip < HighLimitforPart; ip++){
+  //   ADCPart += ADC[ip]-ADCPed;
+  // }
+  // for( int ip = LowLimit; ip < HighLimitforSum; ip++){
+  //   ADCSum += ADC[ip]-ADCPed;
+  // }
+
 }
 
 

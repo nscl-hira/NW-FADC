@@ -3,15 +3,17 @@
 
 #include <iostream>
 #include "TObject.h"
-#include "FADC.h"
 #include "TMath.h"
+
+#include "FADC.h"
+#include "SignalProcessor.h"
 
 class NWEvent : public TObject {
 private:
   const static int NBAR = 24;
   const static int NCH = 112;
   const static int NSMPL = 240;
-
+  static SignalProcessor sigP;
  
 public:
   NWEvent();

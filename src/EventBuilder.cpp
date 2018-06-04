@@ -46,15 +46,17 @@ bool EventBuilder::init(Int_t runNum)
       trFADC[iTree]->SetBranchAddress("wave", &(fadc[iTree]));
       if(trFADC[iTree]->GetEntries() > 0)
       {
-	if(BarIDMap[iTree] < 0)
-	  std::cout << Form("Have %d %d %d at %d", BarIDMap[iTree], NWABMap[iTree], NWRL[iTree], iTree)
-		    << std::endl;
-	
+#ifdef DEBUG
+	std::cout << Form("Have %d %d %d at %d", BarIDMap[iTree], NWABMap[iTree], NWRL[iTree], iTree)
+		  << std::endl;
+#endif
 	trFADC[iTree]->GetEntry(0);
       }
+#ifdef DEBUG
       else
-	std::cout << Form("Missing %d %d %d", BarIDMap[iTree], NWABMap[iTree], NWRL[iTree])
+	std::cout << Form("Missing %d %d %d at %d", BarIDMap[iTree], NWABMap[iTree], NWRL[iTree], iTree)
 		  << std::endl;
+#endif
     } //End loop over trees in file
   } //End loop over files
   
@@ -132,8 +134,8 @@ void EventBuilder::buildEvents()
   trTCB->GetEntry(0);
   ULong64_t MinEvt = tcb->tcb_trigger_number;
 
-  std::cout << Form("Looking for events %llu to %llu (t0 = %llu tend = %llu sec)",
-		    MinEvt, MaxEvt, tcb->tcb_time, tEnd) << std::endl;
+  std::cout << Form("Looking for %d events from %llu to %llu (t0 = %llu tend = %llu sec)",
+		    trTCB->GetEntries(), MinEvt, MaxEvt, tcb->tcb_time, tEnd) << std::endl;
 
   //Variables to track what entry we're at in the trees
   ULong64_t fadcEntry[112] = {0};
@@ -144,7 +146,7 @@ void EventBuilder::buildEvents()
   {
     if((ievt-MinEvt) % ( (MaxEvt-MinEvt)/250 ) == 0)
       std::cout << Form("\r%2.1f%%", ((double)(ievt-MinEvt))/(MaxEvt-MinEvt)*100.)
-		<< std::flush;
+      	<< std::flush;
 
 
     //Just truncate the ammount of data read in
@@ -176,6 +178,10 @@ void EventBuilder::buildEvents()
     int nWaves[2][24] = {0};
     for(int ifadc = 0; ifadc < 112; ifadc++)
     {
+      //If the fadc is not a bar or the FA continue
+      if(BarIDMap[ifadc] <= 0 && SPCHMap[ifadc] != 0)
+	continue;
+      
       if(trFADC[ifadc] == nullptr)
 	continue;
 
@@ -228,7 +234,7 @@ void EventBuilder::buildEvents()
     }//End loop over walls
   } //End loop over events
   
-  std::cout << "Finished loop over events: saving file" << outFile->GetName() << std::endl;
+  std::cout << std::endl << Form("Finished loop over events: saving file %s", outFile->GetName()) << std::endl;
   outFile->Write();
   outFile->Close();
 

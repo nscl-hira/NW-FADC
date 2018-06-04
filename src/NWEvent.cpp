@@ -2,6 +2,8 @@
 
 ClassImp(NWEvent)
 
+SignalProcessor NWEvent::sigP;
+
 NWEvent::NWEvent()
 {
 //  Bars = new Bar*[NBAR];
@@ -16,32 +18,12 @@ void NWEvent::Clear()
 {
   fmulti = 0;
   fTimestamp = 0;
-  /*for(int iBar = 0; iBar < NBAR; iBar++)
-  {
-    fBarNum[iBar] = 0;
-    fGeoMean[iBar] = 0;
-    fFastGeoMean[iBar] = 0;
-
-    fLeft[iBar] = 0;
-    fFastLeft[iBar] = 0;
-    fTimeLeft[iBar] = 0;
-
-    fRight[iBar] = 0;
-    fFastRight[iBar] = 0;
-    fTimeRight[iBar] = 0;
-
-    for(int smpl = 0; smpl<NSMPL; smpl++)
-    {
-      ADCRight[iBar][smpl] = 0;
-      ADCLeft[iBar][smpl] = 0;
-    }
-  }
-  */
 }
 
 
 void NWEvent::AddBar(Int_t barNum, FADC *fadcRight, FADC *fadcLeft)
 {
+  bool validBar = true;
   fBarNum[fmulti] = barNum;
 
   //Copy over the waveforms
@@ -50,16 +32,28 @@ void NWEvent::AddBar(Int_t barNum, FADC *fadcRight, FADC *fadcLeft)
     ADCRight[fmulti][smpl] = fadcRight->ADC[smpl];
     ADCLeft[fmulti][smpl]  = fadcLeft->ADC[smpl];
   }
-
-  fRight[fmulti]     = fadcRight->ADCSum;
-  fFastRight[fmulti] = fadcRight->ADCPart;
-  fTimeRight[fmulti] = fadcRight->ADCTime;
-
-  fLeft[fmulti]     = fadcLeft->ADCSum;
-  fFastLeft[fmulti] = fadcLeft->ADCPart;
-  fTimeLeft[fmulti] = fadcLeft->ADCTime;
-
+  sigP.SetWave(ADCRight[fmulti], NSMPL);
+  fRight[fmulti]     = sigP.GetQDC();
+  fFastRight[fmulti] = sigP.GetFastQDC();
+  fTimeRight[fmulti] = sigP.GetTime() * 2; //Get time in nanoseconds
+  validBar &= sigP.GetStatus();
+  
+  sigP.SetWave(ADCLeft[fmulti], NSMPL);
+  fLeft[fmulti]     = sigP.GetQDC();
+  fFastLeft[fmulti] = sigP.GetFastQDC();
+  fTimeLeft[fmulti] = sigP.GetTime();
+  validBar &= sigP.GetStatus();
+  
   fGeoMean[fmulti]     = TMath::Sqrt(fLeft[fmulti]*fRight[fmulti]);
   fFastGeoMean[fmulti] = TMath::Sqrt(fFastLeft[fmulti]*fFastRight[fmulti]);
-  fmulti++;
+
+  //Make sure this bar is valid
+  if( validBar &&
+      fRight[fmulti]     > 0 &&
+      fLeft[fmulti]      > 0 &&
+      fFastRight[fmulti] > 0 &&
+      fFastLeft[fmulti]  > 0 &&
+      fTimeRight[fmulti] > 0 &&
+      fTimeLeft[fmulti]  > 0 )
+    fmulti++;
 }

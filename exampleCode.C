@@ -34,6 +34,67 @@ void loadRun(int runNum)
   }
 }
 
+void PrintGeoMean(bool iB, Int_t bar)
+{
+  TH1F *geoMean = new TH1F("geoMean", Form("Geometric Mean Bar %d", bar),
+			   500, -100, 6000);
+  for(ULong64_t evt = 0; evt < NW[iB]->GetEntries(); evt++)
+  {
+    if( evt % (NW[iB]->GetEntries()/250) == 0)
+      std::cout << Form("\r%2.1f%%", ((double)evt/NW[iB]->GetEntries()*100.))
+		<< std::flush;
+
+    NW[iB]->GetEntry(evt);
+    for(Int_t i = 0; i < event[iB].fmulti; i++)
+      if(event[iB].fBarNum[i] == bar)
+	geoMean->Fill(event[iB].fGeoMean[i]);
+  }
+
+  TCanvas *canv = new TCanvas("c1", "GeoMean", 900,700);
+  geoMean->Draw("hist");
+}
+
+//Print out the nth waveform
+void PrintWave(bool iB, ULong64_t evt)
+{
+  evt = (evt < NW[iB]->GetEntries()) ? evt : NW[iB]->GetEntries() - 1;
+
+  NW[iB]->GetEntry(evt);
+  while(event[iB].fmulti < 1)
+    NW[iB]->GetEntry(++evt);
+  
+  TH1F *wave[4];
+  wave[0] = new TH1F("wave0", Form("Wall %c Bar %d Right", iB ? 'A' : 'B', event[iB].fBarNum[0]), 240,0,240);
+  wave[1] = new TH1F("wave0", Form("Wall %c Bar %d Right Sub", iB ? 'A' : 'B', event[iB].fBarNum[0]), 240,0,240);
+  wave[2] = new TH1F("wave0", Form("Wall %c Bar %d Left", iB ? 'A' : 'B', event[iB].fBarNum[0]), 240,0,240);
+  wave[3] = new TH1F("wave1", Form("Wall %c Bar %d Left Sub", iB ? 'A' : 'B', event[iB].fBarNum[0]), 240,0,240);
+  SignalProcessor sigR, sigL;
+  sigR.SetWave(event[iB].ADCRight[0], 240);
+  sigL.SetWave(event[iB].ADCLeft[0], 240);
+  for(int ip = 0; ip < 240; ip++)
+  {
+    wave[0]->Fill(ip, event[iB].ADCRight[0][ip]);
+    wave[1]->Fill(ip, event[iB].ADCRight[0][ip] - sigR.GetPedistal());
+    wave[2]->Fill(ip, event[iB].ADCLeft[0][ip]);
+    wave[3]->Fill(ip, event[iB].ADCLeft[0][ip] - sigL.GetPedistal());
+  }
+
+  TCanvas *canv = new TCanvas("c1", "Waveforms", 900, 700);
+  canv->Divide(2,2);
+  canv->cd(1);
+  wave[0]->Draw("hist");
+  canv->cd(3);
+  wave[1]->Draw("hist");
+
+  canv->cd(2);
+  wave[2]->Draw("hist");
+  canv->cd(4);
+  wave[3]->Draw("hist");
+  
+}
+
+
+//Show PSD plot
 void PSD(bool iB, Int_t bar)
 {
   TH2D *psdHist = new TH2D(Form("psd%d", bar+1), Form("PSD Bar %d",bar+1),
@@ -42,6 +103,11 @@ void PSD(bool iB, Int_t bar)
 
   for(ULong64_t evt = 0; evt < NW[iB]->GetEntries(); evt++)
   {
+    if( evt % (NW[iB]->GetEntries()/250) == 0)
+      std::cout << Form("\r%2.1f%%", ((double)evt/NW[iB]->GetEntries()*100.))
+		<< std::flush;
+
+
     NW[iB]->GetEntry(evt);
     //Loop through each multilpicity and look for the right bar
     for(int i = 0; i < event[iB].fmulti; i++)
