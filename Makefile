@@ -66,7 +66,7 @@ debug: all
 
 default: all
 
-all: $(SO) $(BINDIR)/FADC_Conversion_root $(BINDIR)/TCB_Conversion_root
+all: $(SO) $(BINDIR)/FADC_Conversion_root $(BINDIR)/TCB_Conversion_root $(BINDIR)/FADCUnpacker
 sharedObject: $(SO)
 
 #Compile and link executables
@@ -74,6 +74,9 @@ $(BINDIR)/FADC_Conversion_root: $(SRCDIR)/FADC_Conversion_root_v1.cc $(OBJS) $(D
 	@echo "Building $@..."
 	@$(CXX) $(EXEFLAGS) -o $@ $^
 $(BINDIR)/TCB_Conversion_root: $(SRCDIR)/TCB_Conversion_root_v1.cc $(OBJS) $(DICTO)
+	@echo "Building $@..."
+	@$(CXX) $(EXEFLAGS) -o $@ $^
+$(BINDIR)/FADCUnpacker: $(SRCDIR)/FADCUnpacker.cc $(OBJS) $(DICTO)
 	@echo "Building $@..."
 	@$(CXX) $(EXEFLAGS) -o $@ $^
 

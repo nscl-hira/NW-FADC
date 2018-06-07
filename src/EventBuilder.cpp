@@ -86,6 +86,8 @@ bool EventBuilder::init(Int_t runNum)
   {
     outTree[iB]->Branch("fmulti",     &event[iB].fmulti,     "fmulti/I");
     outTree[iB]->Branch("fTimestamp", &event[iB].fTimestamp, "fTimestamp/l");
+    outTree[iB]->Branch("fTimestamp2", &event[iB].fTimestamp2, "fTimestamp/l");
+
     outTree[iB]->Branch("fBarNum", event[iB].fBarNum, "fBarNum[fmulti]/I");
       
     outTree[iB]->Branch("ADCRight", event[iB].ADCRight, "ADCRight[fmulti][240]/S");
@@ -154,6 +156,7 @@ void EventBuilder::buildEvents()
 //      break;
 
     ULong64_t evtTime = 0;
+    ULong64_t evtTime2 = 0;
     
     //Reset the tree variables and tmp variables
     for(int i = 0; i < 2; i++)
@@ -172,8 +175,13 @@ void EventBuilder::buildEvents()
     }
 
     if(tcb->tcb_trigger_number == ievt)
+    {
+      //evtTime = tcb->tcb_ttime;
+      //std::cout << tcb->tcb_ttime - tcb->tcb_ttime0 << std::endl;
       evtTime = tcb->tcb_ttime;
-
+      evtTime2 = tcb->tcb_trigger_number;
+    }
+    
     //Loop though FADCs and look for those that triggered
     int nWaves[2][24] = {0};
     for(int ifadc = 0; ifadc < 112; ifadc++)
@@ -221,6 +229,7 @@ void EventBuilder::buildEvents()
 	if(nWaves[iB][iBar] >= 2)
 	{
 	  event[iB].fTimestamp = evtTime;
+	  event[iB].fTimestamp2 = evtTime2;
 	  event[iB].AddBar(iBar, tempFADC[iB][iBar][0], tempFADC[iB][iBar][1]);
 	  foundEvent = true;
 	}//End loop over all bars in a wall

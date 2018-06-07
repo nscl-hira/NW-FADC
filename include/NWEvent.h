@@ -21,6 +21,7 @@ public:
   
   Int_t fmulti;
   ULong64_t fTimestamp;
+  ULong64_t fTimestamp2;
 
   Int_t   fBarNum[NBAR];
   Double_t fGeoMean[NBAR];
