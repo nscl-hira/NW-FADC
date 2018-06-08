@@ -9,7 +9,7 @@
 //Function definitions
 void printUsage();
 int  unpackTCB(TFile *inTCB, TFile *outTCB);
-
+int  unpackFADC(TFile *inFADC[28], TFile *oFile);
 //Should be called like
 //FADCUnpacker dataDir outDir runNumber
 //The run number should be the korean's run number, not HiRAs
@@ -31,10 +31,7 @@ int main(int argc, char *argv[])
 
   //Try to open all of the input files and output files
   TFile *tcbFile;
-  TFile *tcbOutF;
-
   TFile *fadcFile[28];
-  TFile *fadcOutF[28];
   
   TString tcbFileName = "TCBRawData/RUN_%d_tcb_bin.root";
   TString fadcFileName = "Data%d/RUN_%d_fadc_%d_bin.root";
@@ -62,14 +59,43 @@ int main(int argc, char *argv[])
   //All of the input files are open
 
   //Open TCB out file
-  tcbOutF = new TFile( Form( "%s%s", argv[2], Form(
-  unpackTCB();
-  unpackFADC();
+  TFile *oFile;
+  oFile = new TFile(Form("%s/run-%04d", argv[2], runNum), "RECREATE");
+  if(!oFile->IsOpen())
+  {
+    std::cout << Form("Failed to open output file: %s/run-%04d", argv[2], runNum) << std::endl;
+    return -5;
+  }
+  
+  int tcbStatus  = unpackTCB(tcbFile, oFile);
+  int fadcStatus = unpackFADC(fadcFile. oFile);
 
-  
-  
-  return 0;
+  if(tcbStatus == 0 && fadcStatus == 0)
+    return 0;
+
+  std::cout << "Failed to unpack data" << std::endl;
+  return -6;
 }
+
+int unpackTCB(TFile *tcbFile, TFile *oFile)
+{
+  if(!tcbFile->IsOpen() || !oFile->IsOpen())
+    return -1;
+
+  TTree *inTree, *oTree;
+
+  //Load input tree
+  inTree = (TTree*)tcbFile->Get("TCBTree");
+  UShort_t TCBData[8192];
+  inTree->SetBranchAddress("TCBData", TCBData);
+
+  //Create output tree
+  oFile->cd();
+  oTree = new TTree("TCBTree","");
+  TTree *tcbTree = new TTree();
+  tcbTree->Branch("TCB");
+}
+
 
 void printUsage()
 {
